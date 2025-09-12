@@ -3805,44 +3805,71 @@
                 }
                 $('.V').remove();
             };
+
 	this.PageLetterChart = function () {
-		// #letterChart has been filled with lines of letters from smallest to largest but they are not in pages
-		if (objWolf.chartThis) { objWolf.chartThis = null };
+	    // #letterChart has been filled with lines of letters from smallest to largest but they are not in pages
+	    if (objWolf.chartThis) { objWolf.chartThis = null };
 
-		var characterLines = $('.character-line'); // alle Zeilen
-		var arPages = []; // jede Zeile = eigene Seite
+	    var characterLines = $('.character-line');
+	    var arPages = [];
 
-		// Jede einzelne Zeile in ein eigenes "Page"-Array legen
-		for (let i = 0; i < characterLines.length; i++) {
-			let ht = characterLines[i].clientHeight;
-			if (ht > 0) {
-				arPages.push([characterLines[i]]);
-			} else {
-				characterLines[i].remove();
-			}
-		}
-		// --- Display Order ---
-		if (displayOrder == "1" || displayOrder == "2") {
-		// reverse order of lines auf jeder Seite (falls nötig)
-			for (let j = 0; j < arPages.length; j++) {
-			arPages[j].reverse();
-			}
-		}
-		else {
-		// Monoyer → Seitenreihenfolge umdrehen
-		arPages.reverse();
-		}
+	    // Jede Zeile = eigene Seite
+	    for (let i = 0; i < characterLines.length; i++) {
+		let ht = characterLines[i].clientHeight;
+	        if (ht > 0) {
+		arPages.push([characterLines[i]]);
+	        } else {
+		characterLines[i].remove();
+	        }
+	    }
 
-		// Für jede Seite ein eigenes <div> erzeugen und Zeile hineinsetzen
-		arPages.forEach(function (page, idx) {
-			$('<div class="chart V" id="V' + idx + '"></div>')
-				.css('display', 'none')
-				.appendTo('#letterChart');
-			page.forEach(function (el) {
-				$(el).detach().appendTo($('#letterChart').find('.V:last'));
-			});
-		});
+	// --- Display Order ---
+	if (displayOrder == "1" || displayOrder == "2") {
+		for (let j = 0; j < arPages.length; j++) { arPages[j].reverse(); }
+	} else {
+	arPages.reverse();
 	}
+
+	// Seiten erzeugen
+	arPages.forEach(function (page, idx) {
+	$('<div class="chart V" id="V' + idx + '"></div>')
+	.css('display', 'none')
+	.appendTo('#letterChart');
+	page.forEach(function (el) {
+	$(el).detach().appendTo($('#letterChart').find('.V:last'));
+				});
+	});
+	// === Abschluss-Seite: SCHORBER TEST (nur EINMAL, ganz am Ende) ===
+	if (!$('#V_schorber').length) {
+	    const $page = $('<div class="chart V" id="V_schorber" style="display:none; background:#000;"></div>')
+	        .appendTo('#letterChart');
+
+	// SVG direkt als einziges Flex-Child => wirklich mittig
+	    const html = `
+	      <svg viewBox="0 0 200 200"
+	preserveAspectRatio="xMidYMid meet"
+	           style="width:80vmin; height:80vmin; display:block;">
+	<!-- Rote konzentrische Kreise -->
+	        <g fill="none" stroke="rgb(255,0,0)" stroke-width="4">
+	<circle cx="100" cy="100" r="55"></circle>
+        <circle cx="100" cy="100" r="85"></circle>
+        </g>
+
+        <!-- Grünes Kreuz -->
+        <g stroke="rgb(0,200,0)" stroke-width="6" stroke-linecap="square">
+          <line x1="60"  y1="100" x2="140" y2="100"></line>
+          <line x1="100" y1="60"  x2="100" y2="140"></line>
+        </g>
+
+        <!-- Fixationspunkt -->
+        <circle cx="100" cy="100" r="2.5" fill="rgb(0,200,0)"></circle>
+      </svg>
+    `;
+    $page.append(html);
+}
+
+}
+
 
             this.loadCharts = function () {
                 var allCharts = $('.chart'), arTemp = [], counter = 0;
