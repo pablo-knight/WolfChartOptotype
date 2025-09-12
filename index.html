@@ -558,6 +558,15 @@
             width: 100%;
             display: none;
         }
+
+	/* Letterchart-Seiten vertikal zentrieren */
+	#letterChart .chart.V {
+	  display: flex;
+	  flex-direction: column;   /* Zeilen untereinander */
+	  justify-content: center;  /* vertikal zentrieren */
+	  align-items: center;      /* sicherheitshalber horizontal zentrieren */
+	  height: 100%;             /* nutzt die von JS gesetzte Höhe voll aus */
+	}
         
         .clear-both {
             height: 0;
@@ -2888,7 +2897,7 @@
                         break;
                     case "4"://Decimal
                         var ar = [0.501, 0.631, 0.794, 1, 1.259, 1.585, 2, 2.512, 3.162, 3.981, 5.012, 6.31, 7.943, 10];
-                        var scoreDisplay = ['2', '1.6', '1.25', '1', '0.8', '0.63', '0.5', '0.4', '0.32', '0.25', '0.2', '0.16', '0.125', '0.1'];
+			var scoreDisplay = ['2', '1.6', '1.25', '1', '0.8', '0.63', '0.5', '0.4', '0.32', '0.25', '0.2', '0.16', '0.125', '0.1'];
                         for (a = 0; a < ar.length; a++) {
                             chartArray[a] = [ar[a], scoreDisplay[a]];
                         }
@@ -3796,49 +3805,44 @@
                 }
                 $('.V').remove();
             };
-            this.PageLetterChart = function () {
-                //#letterChart has been filled with lines of letters from smallest to largest but they are not in pages
-                //Page the character lines from smallest to largest so each page fits on screen
-                if(objWolf.chartThis){objWolf.chartThis = null};//not sure what this does, but may implement a chartThis in localStorage so that when you reload you are back on same page
-                var characterLines = $('.character-line'), cumHt = 0, pageNum = 0;//get the character-line DOM elements but then try to use mostly native js
-                var  arPages = [[]];//this 2-dim array will hold the page tree
-                for (let i=0; i<characterLines.length; i++) {
-                    let ht = characterLines[i].clientHeight;
-                    if (ht > 0 && ht <= viewHeight) {
-                        cumHt = cumHt + ht;
-                        if(cumHt <= viewHeight) {
-                            arPages[pageNum].push([characterLines[i]]);
-                        }
-                        else {
-                            cumHt = ht;
-                            pageNum ++;
-                            arPages[pageNum]=[];
-                            arPages[pageNum].push([characterLines[i]]);
-                        }
-                    }
-                    else {
-                        characterLines[i].remove();
-                    }
-                }
-                //---Display Order-----
-                //Largest at top of each page. First displayed page is handled when scrollChart() is called
-                if (displayOrder == "1" || displayOrder == "2") {
-                    //just need to reverse order of lines on each page
-                    for (let j=0; j<arPages.length; j++) {
-                        arPages[j].reverse();
-                        }
-                }
-                else {//Monoyer means smallest at top of each page, and page of smallest lines is highest numbered page
-                        arPages.reverse();
-                }
-                //create a div for each page and populate each page with character-lines
-                arPages.forEach(function(page,idx) {
-                    $('<div class="chart V" id="V'+idx+'"></div>').css('display','none').appendTo('#letterChart');
-                    page.forEach (function (el,idx) {
-                        $(el).detach().appendTo($('#letterChart').find('.V:last'));
-                    });
-                });
-            }
+	this.PageLetterChart = function () {
+		// #letterChart has been filled with lines of letters from smallest to largest but they are not in pages
+		if (objWolf.chartThis) { objWolf.chartThis = null };
+
+		var characterLines = $('.character-line'); // alle Zeilen
+		var arPages = []; // jede Zeile = eigene Seite
+
+		// Jede einzelne Zeile in ein eigenes "Page"-Array legen
+		for (let i = 0; i < characterLines.length; i++) {
+			let ht = characterLines[i].clientHeight;
+			if (ht > 0) {
+				arPages.push([characterLines[i]]);
+			} else {
+				characterLines[i].remove();
+			}
+		}
+		// --- Display Order ---
+		if (displayOrder == "1" || displayOrder == "2") {
+		// reverse order of lines auf jeder Seite (falls nötig)
+			for (let j = 0; j < arPages.length; j++) {
+			arPages[j].reverse();
+			}
+		}
+		else {
+		// Monoyer → Seitenreihenfolge umdrehen
+		arPages.reverse();
+		}
+
+		// Für jede Seite ein eigenes <div> erzeugen und Zeile hineinsetzen
+		arPages.forEach(function (page, idx) {
+			$('<div class="chart V" id="V' + idx + '"></div>')
+				.css('display', 'none')
+				.appendTo('#letterChart');
+			page.forEach(function (el) {
+				$(el).detach().appendTo($('#letterChart').find('.V:last'));
+			});
+		});
+	}
 
             this.loadCharts = function () {
                 var allCharts = $('.chart'), arTemp = [], counter = 0;
